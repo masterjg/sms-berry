@@ -41,23 +41,27 @@ cat <<- EOF | sudo tee /etc/gammu-smsdrc >/dev/null
 	logformat = textalldate
 
 	[smsd]
-	runonreceive = /home/marius/process_sms.sh
 	service = files
 	logfile = syslog
 	debuglevel = 1
+	statusfrequency = 0
+	checksecurity = 0
+	hangupcalls = 1
+	checkbattery = 0
+	checksignal = 0
+	checknetwork = 0
+	deliveryreport = log
+	deliveryreportdelay = 7200
+	runonreceive = /home/${USER}/process_sms.sh
+	excludenumbersfile = 
 	inboxpath = /var/spool/gammu/inbox/
 	outboxpath = /var/spool/gammu/outbox/
 	sentsmspath = /var/spool/gammu/sent/
 	errorsmspath = /var/spool/gammu/error/
-	inboxformat = unicode
 	outboxformat = unicode
-	transmitformat = auto
-	deliveryreport = sms
-	deliveryreportdelay = 7200
-	checksecurity = 0
+	transmitformat = unicode
 EOF
 
-# sudo systemctl daemon-reload
-# sudo systemctl enable --now gammu-smsd
+sudo systemctl enable --now gammu-smsd
 
 sudo reboot
