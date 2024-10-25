@@ -1,23 +1,21 @@
 #!/bin/bash
 
-# sudo apt install gammu gammu-smsd -y
+sudo apt install gammu -y
 
-# cat <<- EOF | sudo tee /root/.gammurc >/dev/null
-# 	[gammu]
+cat <<- EOF > ~/.gammurc
+	[gammu]
+	connection = at
+	device = /dev/sms-proxy
+	synchronizetime = yes
+	logfile = syslog
+	logformat = textalldate
+EOF
 
-# 	port = /dev/sms-proxy
-# 	model = 
-# 	connection = at19200
-# 	synchronizetime = yes
-# 	logfile = 
-# 	logformat = nothing
-# 	use_locking = 
-# 	gammuloc = 
-# EOF
+gammu identify
 
 sudo apt install gammu-smsd -y
 
-cat <<- 'EOF' > /home/marius/process_sms.sh
+cat <<- 'EOF' > ~/process_sms.sh
 	#!/bin/bash
 
 	FROM="${SMS_1_NUMBER}"
@@ -33,25 +31,33 @@ cat <<- 'EOF' > /home/marius/process_sms.sh
 
 	logger "${FROM}: ${MESSAGE}" # journalctl -xef
 EOF
-chmod +x /home/marius/process_sms.sh
+chmod +x ~/process_sms.sh
 
 cat <<- EOF | sudo tee /etc/gammu-smsdrc >/dev/null
 	[gammu]
-	port = /dev/sms-proxy
-	connection = at19200
+	connection = at
+	device = /dev/sms-proxy
+	synchronizetime = yes
+	logformat = textalldate
 
 	[smsd]
-	RunOnReceive = /home/marius/process_sms.sh
+	runonreceive = /home/marius/process_sms.sh
 	service = files
 	logfile = syslog
-	debuglevel = 0
-
+	debuglevel = 1
 	inboxpath = /var/spool/gammu/inbox/
 	outboxpath = /var/spool/gammu/outbox/
 	sentsmspath = /var/spool/gammu/sent/
 	errorsmspath = /var/spool/gammu/error/
+	inboxformat = unicode
+	outboxformat = unicode
+	transmitformat = auto
+	deliveryreport = sms
+	deliveryreportdelay = 7200
+	checksecurity = 0
 EOF
 
-sudo systemctl reload gammu-smsd
+# sudo systemctl daemon-reload
+# sudo systemctl enable --now gammu-smsd
 
 sudo reboot
