@@ -1,5 +1,7 @@
 #!/bin/bash
 
+sudo sed -i "s/HuaweiAltModeGlobal=.*/HuaweiAltModeGlobal=1/" /etc/usb_modeswitch.conf
+
 sudo systemctl disable --now ModemManager
 
 sudo apt install gawk -y
